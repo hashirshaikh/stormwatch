@@ -9,6 +9,8 @@ STORMWATCH is an interactive flood-response game. As Eastbank's Chief Engineer, 
 
 The game uses synthetic, reproducible weather and flood data for learning; it is not an operational forecast or emergency tool.
 
+**[Play STORMWATCH online](https://stormwatch-eastbank-107l.onrender.com/)**
+
 ## Run locally (Windows)
 
 Requirements: Windows 10/11, PowerShell, Python 3.11+, and Node.js 20+.
@@ -19,7 +21,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\run.ps1
 ```
 
-Open <http://127.0.0.1:5173>. The Vite frontend proxies API requests to the FastAPI backend at `http://127.0.0.1:8000`. Press `Ctrl+C` in the launcher terminal to stop the services.
+After startup, open the local frontend address printed by Vite. It proxies API requests to the FastAPI backend. Press `Ctrl+C` in the launcher terminal to stop the services.
 
 The backend requires no environment file. To change the frontend's API proxy, copy `frontend/.env.example` to `frontend/.env.local` and set `VITE_API_PROXY_TARGET`. Local `.env` files are ignored by Git.
 
