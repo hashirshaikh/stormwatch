@@ -2,7 +2,7 @@
 
 **Learn data science by trying to keep a coastal hospital connected during a flood.**
 
-> **[OPEN THE PLAYER GUIDE, LEARNING OUTCOMES & PLAYTEST EVIDENCE](HOW_TO_PLAY.md)**  
+> **[OPEN THE PLAYER GUIDE, LEARNING OUTCOMES & PLAYTEST EVIDENCE](HOW_TO_PLAY.md)**
 > Step-by-step instructions, concepts covered in each task, gameplay screenshots, and peer feedback.
 
 STORMWATCH is a turn-based flood-response learning game. Players investigate noisy rainfall readings, tune a moving average, experiment with a linear-regression model, place a small number of emergency resources on a live city map, then make six rainfall forecasts as the Python flood simulation advances through a 24-hour storm.
