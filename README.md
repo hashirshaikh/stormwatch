@@ -27,8 +27,6 @@ The map is interactive: click weather stations to switch the rainfall record, in
 
 All weather is synthetic and reproducible. The city and learning models are educational simulations, not operational flood forecasts.
 
-For the step-by-step player guide, task learning outcomes, gameplay screenshots, and peer feedback, see [How to Play and What You Learn](HOW_TO_PLAY.md).
-
 ## Run locally on Windows
 
 Requirements: Windows 10/11, PowerShell, Python 3.11+, and Node.js 20+.
