@@ -34,6 +34,7 @@ export class EastbankScene extends Phaser.Scene {
   private waterDepthTarget: number[] = [];
   private waterAnimationElapsed = 0;
   private waterAnimationActive = false;
+  private floodFront: Array<{ x: number; y: number; startedAt: number }> = [];
   private staticRendered = false;
   private visualElapsed = 0;
   private dynamicDrawElapsed = 0;
@@ -47,11 +48,14 @@ export class EastbankScene extends Phaser.Scene {
   private focusGraphics?: Phaser.GameObjects.Graphics;
   private kenneyReady = false;
   private placementMode = false;
+  private readyCallback?: () => void;
   private tutorialFocusId: string | null = null;
   private placementPreview: { cell: MapCell; valid: boolean; resourceId: 'pump' | 'barrier' | 'rescue-boat'; direction: 'N' | 'E' | 'S' | 'W' } | null = null;
   private placementGraphics?: Phaser.GameObjects.Graphics;
 
   constructor(private readonly callbacks: EastbankCallbacks) { super('eastbank'); }
+
+  setReadyCallback(callback: () => void) { this.readyCallback = callback; }
 
   preload() {
     this.load.spritesheet(
@@ -108,11 +112,13 @@ export class EastbankScene extends Phaser.Scene {
       const next = Phaser.Math.Clamp(camera.zoom * (dy > 0 ? 0.9 : 1.1), 1, 2.8);
       camera.zoomTo(next, 170);
     });
+    this.readyCallback?.();
+    this.readyCallback = undefined;
   }
 
   setMapData(data: GameState, initial = false) {
     if (data.columns !== W || data.rows !== H || data.cells.length !== W * H) {
-      throw new Error('Eastbank map grid must be exactly 32 × 24 cells');
+      throw new Error('Eastbank map grid must be exactly 32 x 24 cells');
     }
     if (!this.map || initial || this.displayedWaterDepth.length !== data.cells.length) {
       this.displayedWaterDepth = data.cells.map(cell => cell.water_depth_mm);
@@ -124,6 +130,12 @@ export class EastbankScene extends Phaser.Scene {
       this.waterDepthTarget = data.cells.map(cell => cell.water_depth_mm);
       this.waterAnimationElapsed = 0;
       this.waterAnimationActive = true;
+      const newFront = data.cells.filter((cell, index) => {
+        const before = this.displayedWaterDepth[index] ?? 0;
+        return cell.water_depth_mm - before > 5 && (before < 3 || cell.water_depth_mm - before > 25);
+      }).map(cell => ({ x: cell.x, y: cell.y, startedAt: this.visualElapsed }));
+      this.floodFront = [...this.floodFront.filter(item => this.visualElapsed - item.startedAt < 1500), ...newFront].slice(-180);
+      if (newFront.some(item => data.cells[at(item.x, item.y)]?.is_road)) this.cameras.main.shake(180, 0.0012);
     }
     this.map = data;
     this.deployed = [
@@ -147,7 +159,7 @@ export class EastbankScene extends Phaser.Scene {
       }
       if (progress >= 1) this.waterAnimationActive = false;
     }
-    // Dynamic 32×24 layers redraw at 16–20 fps; terrain and building art remains cached.
+    // Dynamic 32x24 layers redraw at 16x20 fps; terrain and building art remains cached.
     this.dynamicDrawElapsed += delta;
     if (this.dynamicDrawElapsed >= 55) {
       this.dynamicDrawElapsed = 0;
@@ -255,7 +267,7 @@ export class EastbankScene extends Phaser.Scene {
   private drawKenneyAssets() {
     const city = this.map!;
     const places = new Map(city.locations.map(place => [place.id, place]));
-    // These frames were read from the included 12 × 11 tile sheet: brown/blue roof tiles,
+    // These frames were read from the included 12 x 11 tile sheet: brown/blue roof tiles,
     // trees and road props. The source uses 16px cells separated by one transparent pixel.
     for (const cell of city.cells) {
       if (cell.building_id) {
@@ -436,7 +448,7 @@ export class EastbankScene extends Phaser.Scene {
       if (depth < 1) continue;
       const x = cell.x * TILE, y = cell.y * TILE;
       const tint = waterTint(depth);
-      const alpha = this.overlay === 'water' ? 0.13 : Math.min(0.56, 0.15 + depth / 190);
+      const alpha = this.overlay === 'water' ? 0.28 : Math.min(0.7, 0.22 + depth / 145);
       surface.fillStyle(tint, alpha); surface.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
       const phase = ((this.visualElapsed / 95) + hash(cell.x, cell.y)) % 25;
       surface.lineStyle(1, 0xa8e5e5, Math.min(0.62, 0.18 + depth / 260));
@@ -469,7 +481,7 @@ export class EastbankScene extends Phaser.Scene {
     this.weatherGraphics.clear(); this.atmosphereGraphics.clear();
     if (rain <= 0.5) return;
     const severity = Phaser.Math.Clamp(rain / 100, 0, 1);
-    this.atmosphereGraphics.fillStyle(0x0d1a29, severity * 0.36);
+    this.atmosphereGraphics.fillStyle(0x0d1a29, severity * 0.2);
     this.atmosphereGraphics.fillRect(0, 0, W * TILE, H * TILE);
     const count = Math.round(18 + severity * 190);
     const drift = (this.visualElapsed * (0.035 + severity * 0.08)) % (W * TILE + 60);
@@ -497,6 +509,22 @@ export class EastbankScene extends Phaser.Scene {
       g.strokeCircle(x, y, 12 + pulse * 4);
       g.fillStyle(0xffe6a1, 0.22 + pulse * 0.3); g.fillCircle(x + 8, y - 8, 2);
     }
+    // Emergency traffic becomes visible once the scripted storm is running.
+    // It follows the cross-town arterial as a small flashing ambulance sprite.
+    if (this.map.scenario_progress.active) {
+      const routeY = 17 * TILE + 16;
+      const travel = (this.visualElapsed / 22) % (W * TILE + 60);
+      const x = travel - 30;
+      const siren = Math.sin(this.visualElapsed / 78) > 0 ? 0xe65d52 : 0x5f9dd2;
+      g.fillStyle(0x203b39, 0.22); g.fillEllipse(x, routeY + 10, 27, 5);
+      g.fillStyle(0x29423e, 1); g.fillRoundedRect(x - 11, routeY - 7, 22, 13, 3);
+      g.fillStyle(0xf3eee0, 1); g.fillRoundedRect(x - 9, routeY - 8, 19, 10, 2);
+      g.fillStyle(0xa7c7bd, 1); g.fillRect(x - 7, routeY - 6, 5, 4); g.fillRect(x + 2, routeY - 6, 5, 4);
+      g.fillStyle(0xc94f49, 1); g.fillRect(x - 1, routeY - 6, 2, 5); g.fillRect(x - 3, routeY - 4, 6, 2);
+      g.fillStyle(0x293533, 1); g.fillCircle(x - 6, routeY + 4, 2); g.fillCircle(x + 6, routeY + 4, 2);
+      g.fillStyle(siren, 0.95); g.fillCircle(x, routeY - 10, 2);
+      g.fillStyle(siren, 0.16); g.fillCircle(x, routeY - 10, 8);
+    }
     const hospital = this.map.locations.find(place => place.kind === 'hospital');
     if (hospital && this.map.simulation.location_accessibility[hospital.id] === 'inaccessible') {
       const x = hospital.x * TILE + hospital.width * TILE / 2;
@@ -514,6 +542,14 @@ export class EastbankScene extends Phaser.Scene {
       const ripple = (this.visualElapsed / 100 + hash(cell.x, cell.y)) % 8;
       g.lineStyle(1, 0x91e1df, 0.65 - ripple * 0.05); g.strokeCircle(x, y, 4 + ripple);
       g.fillStyle(0xbce9de, 0.65); g.fillCircle(x + (ripple % 3), y - 3, 1.3);
+    }
+    this.floodFront = this.floodFront.filter(front => this.visualElapsed - front.startedAt < 1500);
+    for (const front of this.floodFront) {
+      const age = this.visualElapsed - front.startedAt;
+      const progress = age / 1500;
+      const x = front.x * TILE + 16, y = front.y * TILE + 16;
+      g.lineStyle(2, 0x9ce8ee, 0.8 * (1 - progress));
+      g.strokeCircle(x, y, 7 + progress * 24);
     }
   }
 
@@ -577,15 +613,15 @@ export class EastbankScene extends Phaser.Scene {
   private drawPlaceLabels() {
     this.add.text(42, 310, 'WEST RIVER', { fontFamily: 'monospace', fontSize: '13px', color: '#e0e6c5', backgroundColor: '#184553', padding: { x: 4, y: 3 } }).setDepth(5);
     this.add.text(255, 302, 'EASTBANK DRAINAGE CANAL', { fontFamily: 'monospace', fontSize: '12px', color: '#e1e8ca', backgroundColor: '#244851', padding: { x: 4, y: 3 } }).setDepth(5);
-    this.add.text(366, 525, 'HOSPITAL ACCESS · LOW', { fontFamily: 'monospace', fontSize: '10px', color: '#f5d598', backgroundColor: '#473b2c', padding: { x: 3, y: 2 } }).setDepth(5);
+    this.add.text(366, 525, 'HOSPITAL ACCESS x LOW', { fontFamily: 'monospace', fontSize: '13px', color: '#f5d598', backgroundColor: '#473b2c', padding: { x: 4, y: 3 } }).setDepth(5);
     for (const station of this.map!.locations.filter(place => place.kind === 'weather_station')) {
-      this.add.text(station.x * TILE + 16, station.y * TILE - 3, 'WX', { fontFamily: 'monospace', fontSize: '9px', color: '#f7e5aa', backgroundColor: '#394335', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(5);
+      this.add.text(station.x * TILE + 16, station.y * TILE - 3, 'WX', { fontFamily: 'monospace', fontSize: '12px', color: '#f7e5aa', backgroundColor: '#394335', padding: { x: 3, y: 2 } }).setOrigin(0.5, 1).setDepth(5);
     }
     for (const place of this.map!.locations.filter(item => ['hospital', 'school', 'control_centre'].includes(item.kind))) {
       const label = place.kind === 'hospital' ? 'EASTBANK GENERAL' : place.kind === 'school' ? 'EASTBANK SCHOOL' : 'FLOOD CONTROL';
       this.add.text(place.x * TILE, place.y * TILE - 13, label, {
-        fontFamily: 'monospace', fontSize: '10px', color: '#fff0c5', backgroundColor: '#182b2a',
-        padding: { x: 3, y: 2 },
+        fontFamily: 'monospace', fontSize: '13px', color: '#fff0c5', backgroundColor: '#182b2a',
+        padding: { x: 4, y: 3 },
       }).setDepth(6);
     }
   }

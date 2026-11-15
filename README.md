@@ -1,115 +1,32 @@
-# 🌧️ STORMWATCH: The Last 24 Hours
+﻿# STORMWATCH: Eastbank Flood Response
 
-### Read the rain. Predict the flood. Protect Eastbank.
+**Learn data science by trying to keep a coastal hospital connected during a flood.**
 
-STORMWATCH is an interactive city-simulation game where you become Novara’s Flood Intelligence Engineer. Explore Eastbank, investigate synthetic weather data, try real data-science tools, and deploy emergency resources while the Python flood model calculates how the city responds.
+STORMWATCH is a turn-based flood-response learning game. Players investigate noisy rainfall readings, tune a moving average, experiment with a linear-regression model, place a small number of emergency resources on a live city map, then make six rainfall forecasts as the Python flood simulation advances through a 24-hour storm.
 
-<p align="center">
-  <a href="https://stormwatch-eastbank.onrender.com"><strong>▶ PLAY THE LIVE GAME</strong></a>
-  &nbsp; · &nbsp;
-  <a href="https://stormwatch-eastbank.onrender.com/api/health">Service health</a>
-  &nbsp; · &nbsp;
-  <a href="https://github.com/Pvinaykumar24/flood_safety_game">Source code</a>
-</p>
+## Play loop
 
-> **Live demo:** [stormwatch-eastbank.onrender.com](https://stormwatch-eastbank.onrender.com) · **Health:** [API status](https://stormwatch-eastbank.onrender.com/api/health) · **Hosting:** Render free web service
->
-> The live service was checked on **November 15, 2026** and returned `status: ok`. Free hosting may sleep when idle; the first visit after a quiet period can take about a minute to wake. This is a deployed educational demo, not an operational flood-warning service. Active Python sessions are temporary and can end when the service restarts. Browser campaign progress is saved locally.
+1. **Read the rain.** Choose a weather station and adjust the moving-average window. Compare the raw readings with the smoothed signal. Wider windows reduce variation but can hide a sudden burst.
+2. **Build a model.** Explore rainfall versus water depth. Training observations and later, unseen test observations have different colors. Move the trial regression line and ask Python to score its average residual against the training data; compare it with Python's least-squares line.
+3. **Prepare the city.** Choose pumps, barriers, or a rescue boat from a limited inventory and place them on the map. Their effects are calculated by the flood engine.
+4. **Ride the storm.** Make a rainfall estimate, review the model's corresponding water-depth estimate, then lock your call. The simulation advances four hours and reveals the sensor's actual depth. The gap is your prediction error. Repeat for six decisions.
+5. **Review the field report.** Compare forecast errors and see whether the hospital road remained open, how much of the road network flooded, and how many residents were evacuated.
 
----
+Maya Reyes, the field lead, welcomes the player, introduces the mission, and gives step-specific briefings as the game progresses. Players can also open **Ask Maya** at any point for guidance on the current task. At the end, Maya presents a mission score based on forecast accuracy (50%), hospital access (35%), and road safety (15%), along with the individual scores for each category.
 
-## 🎮 Your mission
+The map is interactive: click weather stations to switch the rainfall record, inspect city cells, and place equipment. Drag to pan, use the wheel or map controls to zoom, and turn on **Audio** for optional ambient rain and music.
 
-Eastbank is facing a severe rainfall event. As the Flood Intelligence Engineer, you will:
+## Learning goals
 
-- Inspect a 32 × 24 coastal city, its hospital, school, roads, river, drainage and weather stations.
-- Investigate hourly observations and use statistics to summarize rainfall.
-- Smooth noisy measurements with a moving average.
-- Explore rainfall and water depth with regression, predictions and residuals.
-- Compare forecasts against unseen observations using MAE and RMSE.
-- Spend a 100-credit emergency budget on pumps, barriers and rescue boats.
-- Advance the flood simulation and see how your decisions affect access, residents and the final city report.
+- **Moving averages and sampling:** smooth noisy sensor readings; observe how window size changes variance and can hide short-lived peaks.
+- **Linear regression and residuals:** connect rainfall input to water-depth output; compare a player-adjusted line with a least-squares fit.
+- **Testing predictions and decision-making:** forecast before advancing the flood, measure the miss against a held-out simulated outcome, and use the consequences to judge equipment placement.
 
-The city is the play space: select locations, inspect conditions, change map overlays, and place resources directly on the map.
+All weather is synthetic and reproducible. The city and learning models are educational simulations, not operational flood forecasts.
 
-## 🕹️ How to play
+## Run locally on Windows
 
-### Guided Campaign
-
-Choose **Guided Campaign** for the Eastbank story. Follow the mission objective and compact METEO AI prompts. Each mission unlocks the next as you complete its activities; completed missions can be replayed.
-
-1. **The First Drop** — inspect the southern weather station, reveal its six-hour rainfall record, then calculate the average.
-2. **The Hidden Flood Pattern** — compare rainfall with moving averages and experiment with the smoothing window.
-3. **Predict the Flood** — explore the rainfall/water-depth scatter plot, adjust a line, and fit the regression model.
-4. **The Prediction Failure** — compare forecasts with actual held-out observations and inspect model errors.
-5. **Save Novara** — prepare the storm, allocate response resources, run the flood, and review the final report.
-
-### Free Play
-
-Choose **Free Play** to explore without mission locks. Open Weather Lab and other tools when you want them, inspect city cells, toggle overlays, and set rainfall yourself.
-
-**To run a Free Play simulation:**
-
-1. Open **Weather Lab** and set the rainfall intensity.
-2. Select **10 MIN** to advance one ten-minute step, or press **Resume** to let the simulation advance in batches. **Pause** stops the clock.
-3. Turn on the **Water Depth** overlay to see the backend’s water grid on the map. Try higher rainfall and advance several steps to observe accumulation.
-4. Place pumps, barriers or boats using the response controls, then advance again to compare the result.
-
-Free Play uses the rainfall intensity you choose. The scripted Eastbank storm sequence belongs to the **Save Novara** campaign mission and starts when you prepare that storm. If you only change rainfall without advancing time, the flood simulation has not progressed yet.
-
-### City controls
-
-- **Pan:** click and drag the map.
-- **Zoom:** use the mouse wheel or the on-screen zoom controls; reset the camera to return to the district view.
-- **Inspect:** hover to highlight a cell, then click buildings, roads, monitoring stations or drainage features for details.
-- **Overlays:** use the map controls to explore elevation, rainfall, water depth, drainage and flood risk.
-- **Reset:** use **New Run** to create a fresh backend session. A backend restart also clears live sessions.
-
-## 🧠 What you learn by experimenting
-
-STORMWATCH connects data-science ideas to visible city outcomes:
-
-| Experiment | Concept | What to look for |
-|---|---|---|
-| Summarize the six-hour rainfall record | Mean and descriptive statistics | One number summarizes several changing observations. |
-| Change the smoothing window | Moving average | Larger windows smooth more, but can hide short rainfall bursts. |
-| Adjust and fit a prediction line | Least-squares linear regression | Slope, intercept, fitted values and residual distances. |
-| Compare model predictions with later observations | Chronological validation, MAE and RMSE | A model can miss; a more complex model is not guaranteed to win. |
-| Inspect weather variables together | Pearson correlation | Association is not proof of causation. |
-| Place resources and run the flood | Applied modeling and decision-making | Forecasts and interventions have consequences in the simulated city. |
-
-Weather observations are synthetic and reproducible with a configured seed. Forecasts are educational estimates, not operational predictions.
-
-## ✨ Project status
-
-- **Playable online demo:** deployed at the link above; `/api/health` was responding when this README was updated.
-- **Frontend and backend:** served together by FastAPI in the Render deployment; local development uses Vite’s `/api` proxy.
-- **Simulation and analytics:** Python is authoritative for flood calculations and data-science results. Phaser renders returned state; it does not implement separate flood physics.
-- **Local verification:** the latest reported backend suite passed **59 tests**, and the frontend production build succeeded. Those checks were run during the Free Play simulation fix; rerun them against your checkout before making a new release.
-- **Hosting limits:** the free Render service may sleep, has temporary storage, and keeps active game sessions in memory. It is suitable for a presentation/demo, not persistent production workloads.
-
-The flood model is intentionally simplified for learning. Read [SIMULATION_MODEL.md](SIMULATION_MODEL.md) and [ANALYTICS_MODEL.md](ANALYTICS_MODEL.md) for assumptions and limits.
-
-## 🧰 Technology
-
-- **Game:** TypeScript, Phaser 3.90, Vite, HTML/CSS and Chart.js.
-- **Simulation API:** Python 3.11+, FastAPI, NumPy, Pydantic and Uvicorn.
-- **Automated checks:** pytest and the Vite production build.
-- **Map/data:** bundled local artwork and `shared/eastbank_grid.json`.
-
-No authentication, database, paid API or cloud account is required to play locally. The live demo is hosted on Render; the game uses synthetic weather and does not call external data services during play.
-
-## 🚀 Run locally on Windows
-
-### Requirements
-
-- Windows 10/11 with PowerShell 5.1 or PowerShell 7.
-- Python 3.11 or newer available as `python`.
-- Node.js 20 or newer with npm.
-
-Initial setup downloads Python and JavaScript packages from their package registries. After setup, the game runs locally with its bundled assets and synthetic data.
-
-From the project root:
+Requirements: Windows 10/11, PowerShell, Python 3.11+, and Node.js 20+.
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
@@ -117,65 +34,39 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\run.ps1
 ```
 
-Open [http://127.0.0.1:5173](http://127.0.0.1:5173). The API health endpoint is [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health). The launcher starts the local backend and frontend; use **Ctrl+C** in its terminal to stop them. Logs are written to `%TEMP%\stormwatch-logs`.
+Open <http://127.0.0.1:5173>. The frontend uses Vite; the Python FastAPI simulation runs at <http://127.0.0.1:8000>. The game needs no API keys or external data service. `Ctrl+C` in the launcher terminal stops services started by it.
 
-The setup script creates `backend/.venv` and installs dependencies. You can safely run it again if setup needs repair. The game requires no API keys or `.env` secrets. To change the local backend proxy address, copy `frontend/.env.example` to `frontend/.env.local` and set `VITE_API_PROXY_TARGET`.
+The only environment setting is optional. Copy `frontend/.env.example` to `frontend/.env.local` to change the Vite API proxy target; the default is `http://127.0.0.1:8000`. Do not commit `.env.local` or other files containing local secrets. The backend currently needs no environment file.
 
-### Run services separately
+### Run the services separately
 
-Backend terminal:
-
-```powershell
-cd .\backend
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-Frontend terminal:
+Start the backend from the project root:
 
 ```powershell
-cd .\frontend
-npm run dev -- --host 127.0.0.1 --port 5173
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-## 🌐 Deployment
-
-The repository contains `render.yaml` and a multi-stage `Dockerfile` for the current Render demo. To create your own deployment, connect the repository to Render using **New → Blueprint**, select the `main` branch, and apply the Blueprint. Render builds the frontend and serves it with FastAPI on the same origin. The configured health check is `/api/health`.
-
-The free plan can sleep after inactivity and has ephemeral storage. Game sessions live in backend memory; a service restart, redeploy or sleep/restart cycle can end an active session. This deployment does not provide durable session storage or production availability guarantees.
-
-## 🔌 API at a glance
-
-- `GET /api/health` — service health.
-- `/api/game/{session_id}` — create/read/reset sessions, update rainfall, advance the flood, place resources and inspect mission/scenario state.
-- `/api/analytics` — statistics, moving average, regression, correlation, model evaluation, weather observations and forecasts.
-- `/api/map/eastbank` — Eastbank map metadata.
-
-The typed frontend client is in `frontend/src/api.ts`. While running locally, interactive API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
-
-## 🗂️ Project map
-
-```text
-STORMWATCH/
-├── backend/app/analytics/       # Synthetic weather and NumPy data-science models
-├── backend/app/simulation/      # Authoritative flood engine and emergency resources
-├── backend/tests/               # Python unit, API and session tests
-├── frontend/src/                # Phaser game, UI, typed API client and charts
-├── frontend/public/assets/      # Bundled map artwork and media
-├── shared/eastbank_grid.json    # Shared 32 × 24 map and simulation metadata
-├── docs/                        # Design, learning, model and playtest documents
-├── scripts/                     # Windows setup, run and QA helpers
-├── ASSET_CREDITS.md             # Asset sources and license register
-├── ANALYTICS_MODEL.md           # Analytics assumptions
-└── SIMULATION_MODEL.md          # Flood-model assumptions
-```
-
-## ✅ Run checks
+In a second terminal, start the frontend:
 
 ```powershell
-cd .\backend
-..\.venv\Scripts\python.exe -m pytest -q
-cd ..\frontend
-npm run build
+cd frontend
+npm ci
+npm run dev
 ```
 
-More detail: [Game design](docs/GAME_DESIGN.md) · [Learning objectives](docs/LEARNING_OBJECTIVES.md) · [Mathematical models](docs/MATHEMATICAL_MODELS.md) · [System architecture](docs/SYSTEM_ARCHITECTURE.md) · [Playtest report template](docs/PLAYTEST_REPORT_TEMPLATE.md) · [Asset credits](ASSET_CREDITS.md).
+For a production container, run `docker build -t stormwatch .` from the project root, then `docker run --rm -p 10000:10000 stormwatch`. The container serves the built frontend and API together. A Render deployment is configured in `render.yaml`.
+
+## Project structure
+
+- `frontend/src/main.ts` — game flow, visual learning challenges, and UI state
+- `frontend/src/EastbankScene.ts` — animated Phaser city map, water, and equipment placement
+- `frontend/src/style.css` — responsive field-console interface
+- `frontend/src/api.ts` — typed client for the Python service
+- `frontend/.env.example` — optional Vite API proxy configuration
+- `backend/app/analytics/` — synthetic weather, moving averages, regression, and evaluation
+- `backend/app/simulation/` — authoritative flood engine and response resources
+- `backend/app/main.py` — FastAPI endpoints for game state and analytics
+- `shared/eastbank_grid.json` — shared city map and simulation grid
+
+Run `npm run build` from `frontend/` to build the frontend. Run backend checks from `backend/` with `..\.venv\Scripts\python.exe -m pytest -q`.
